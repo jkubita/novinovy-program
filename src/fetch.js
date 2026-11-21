@@ -35,12 +35,16 @@ export async function fetchPage(url, { timeoutMs = 20000, retries = 2 } = {}) {
         redirect: "follow",
         signal: AbortSignal.timeout(timeoutMs),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        const server = res.headers.get("server");
+        throw Object.assign(new Error(`HTTP ${res.status}${server ? ` (server: ${server})` : ""}`), { status: res.status });
+      }
       const bytes = new Uint8Array(await res.arrayBuffer());
       const charset = detectCharset(res.headers.get("content-type"), bytes);
       return { html: decode(bytes, charset), finalUrl: res.url || url };
     } catch (e) {
       lastError = e;
+      if (e.status >= 400 && e.status < 500) break; // blokace nebo chybná adresa, opakování nepomůže
       if (attempt < retries) await new Promise((r) => setTimeout(r, 2000 * (attempt + 1)));
     }
   }

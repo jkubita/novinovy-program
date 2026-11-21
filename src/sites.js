@@ -12,6 +12,8 @@
  * @property {RegExp} article     odpovídá absolutní URL článku
  * @property {RegExp} [exclude]   URL, které článek nejsou, i když vypadají podobně
  * @property {string} [scope]     CSS selektor hlavního obsahu (zbytek stránky se ignoruje)
+ * @property {string} [feed]      RSS kanál jako náhrada, když titulní stranu nejde stáhnout.
+ *                                Pořadí je pak podle času vydání, ne podle důležitosti.
  * @property {string} color       barva sloupce ve frontendu
  */
 
@@ -74,6 +76,8 @@ export const SITES = [
     url: "https://www.irozhlas.cz/",
     // https://www.irozhlas.cz/zpravy-domov/nazev-clanku_2611211234_abc
     article: /^https?:\/\/(www\.)?irozhlas\.cz(\/[a-z0-9-]+)+_\d{10}_[a-z0-9]+\/?$/i,
+    // Titulní strana vrací serverům GitHubu HTTP 403, RSS je oficiální strojový zdroj.
+    feed: "https://www.irozhlas.cz/rss/irozhlas",
     color: "#0a8f8f",
   },
 ];

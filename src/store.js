@@ -7,7 +7,8 @@ import { join, dirname } from "node:path";
 // {
 //   "site": "idnes", "date": "2026-11-21",
 //   "articles": [ { link, headline, perex, firstSeen, lastSeen, history: [{time, headline}] } ],
-//   "snapshots": [ { time, top: [indexy do articles, v pořadí na stránce] } ]
+//   "snapshots": [ { time, top: [indexy do articles, v pořadí na stránce], source? } ]
+//   (source: "rss" = snímek z RSS kanálu, pořadí podle času vydání)
 // }
 //
 // `history` obsahuje jen pozdější změny titulku. Původní titulek je
@@ -47,7 +48,7 @@ async function writeJson(path, data) {
  * @param {import("./extract.js").Article[]} articles  články v pořadí na stránce
  * @param {number} time  ms od epochy
  */
-export function addSnapshot(day, articles, time) {
+export function addSnapshot(day, articles, time, source) {
   const index = new Map(day.articles.map((a, i) => [a.link, i]));
   const top = [];
   for (const a of articles.slice(0, TOP_N)) {
@@ -68,15 +69,15 @@ export function addSnapshot(day, articles, time) {
     }
     if (!top.includes(i)) top.push(i);
   }
-  day.snapshots.push({ time, top });
+  day.snapshots.push(source ? { time, top, source } : { time, top });
   return day;
 }
 
-export async function saveSnapshot(dataDir, siteId, articles, time) {
+export async function saveSnapshot(dataDir, siteId, articles, time, source) {
   const date = pragueDate(time);
   const path = join(dataDir, date, `${siteId}.json`);
   const day = await readJson(path, { site: siteId, date, articles: [], snapshots: [] });
-  addSnapshot(day, articles, time);
+  addSnapshot(day, articles, time, source);
   await writeJson(path, day);
   return { date, path };
 }

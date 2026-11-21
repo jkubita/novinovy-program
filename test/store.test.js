@@ -27,6 +27,13 @@ test("addSnapshot znovu použije existující články a zaznamená změnu titul
   assert.equal(day.articles[1].lastSeen, 1000);
 });
 
+test("addSnapshot zaznamená zdroj snímku jen když není z titulní strany", () => {
+  const day = empty();
+  addSnapshot(day, [art(1)], 1);
+  addSnapshot(day, [art(1)], 2, "rss");
+  assert.deepEqual(day.snapshots, [{ time: 1, top: [0] }, { time: 2, top: [0], source: "rss" }]);
+});
+
 test("addSnapshot ukládá nejvýš TOP_N článků", () => {
   const day = addSnapshot(empty(), Array.from({ length: 25 }, (_, i) => art(i)), 1);
   assert.equal(day.snapshots[0].top.length, TOP_N);

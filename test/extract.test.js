@@ -2,7 +2,7 @@
 // Nenahrazují kontrolu proti živým stránkám (`npm run check`).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { extractArticles, normalizeUrl } from "../src/extract.js";
+import { extractArticles, extractFeed, normalizeUrl } from "../src/extract.js";
 import { detectCharset, decode } from "../src/fetch.js";
 import { getSite, SITES } from "../src/sites.js";
 
@@ -114,6 +114,19 @@ test("iROZHLAS: relativní odkazy s datem v URL, sekce se ignorují", () => {
   </body>`;
   const res = extractArticles(html, getSite("irozhlas"));
   assert.deepEqual(res.map((a) => a.link), ["https://www.irozhlas.cz/zpravy-domov/snemovna-rozpocet-hlasovani_2611211234_ako", "https://www.irozhlas.cz/zpravy-svet/nato-summit_2611210915_jgr"]);
+  assert.equal(res[0].perex, PEREX);
+});
+
+test("RSS: titulky, odkazy bez utm a perex bez HTML z CDATA", () => {
+  const xml = `<?xml version="1.0" encoding="utf-8"?><rss version="2.0"><channel><title>iROZHLAS</title>
+    <item><title>Sněmovna bude hlasovat o rozpočtu</title><link>https://www.irozhlas.cz/zpravy-domov/snemovna-rozpocet_2611211234_ako?utm_source=rss</link>
+      <description><![CDATA[<p>${PEREX}</p>]]></description></item>
+    <item><title>Rubrika, ne článek</title><link>https://www.irozhlas.cz/zpravy-domov</link></item>
+    <item><title>Summit NATO skončil bez dohody</title><link>https://www.irozhlas.cz/zpravy-svet/nato_2611210915_jgr</link></item>
+  </channel></rss>`;
+  const res = extractFeed(xml, getSite("irozhlas"));
+  assert.deepEqual(res.map((a) => a.link), ["https://www.irozhlas.cz/zpravy-domov/snemovna-rozpocet_2611211234_ako", "https://www.irozhlas.cz/zpravy-svet/nato_2611210915_jgr"]);
+  assert.equal(res[0].headline, "Sněmovna bude hlasovat o rozpočtu");
   assert.equal(res[0].perex, PEREX);
 });
 

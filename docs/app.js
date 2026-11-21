@@ -29,12 +29,8 @@ function headlineAt(article, time) {
 
 function renderStatus() {
   if (!index) return;
-  const parts = [`Aktualizováno ${fmtDateTime.format(index.updated)}`];
-  for (const site of index.sites) {
-    const st = index.status?.[site.id];
-    if (st && !st.ok) parts.push(`<span class="err" title="${esc(st.error)}">${esc(site.name)}: poslední stažení selhalo</span>`);
-  }
-  els.status.innerHTML = parts.join(" · ");
+  // Chyby stahování se na stránce neukazují, jsou ve výpisu GitHub Actions a v data/index.json.
+  els.status.textContent = `Aktualizováno ${fmtDateTime.format(index.updated)}`;
 }
 
 const slotStart = (time) => Math.floor(time / SLOT) * SLOT;
@@ -49,14 +45,14 @@ function toBlocks(day, depth) {
   let cur = null;
   for (const snap of day?.snapshots ?? []) {
     const top = snap.top.slice(0, depth);
-    const key = top.join(",");
+    const key = top.join(",") + (snap.source ? `|${snap.source}` : "");
     const start = slotStart(snap.time);
     if (cur && cur.key === key && start - cur.end < SLOT / 2) {
       cur.end = start + SLOT;
       continue;
     }
     if (cur && start < cur.end) cur.end = start;
-    cur = { key, top, start, end: start + SLOT, time: snap.time };
+    cur = { key, top, start, end: start + SLOT, time: snap.time, source: snap.source };
     blocks.push(cur);
   }
   return blocks;
@@ -97,7 +93,8 @@ function render() {
     let prevTop = [];
     for (const b of perSite[i]) {
       html.push(`<section class="block" style="top:${y(b.start)}px;height:${y(b.end) - y(b.start)}px"><div class="block-content">`);
-      html.push(`<div class="when">${fmtTime.format(b.start)}–${fmtTime.format(b.end)}</div>`);
+      const src = b.source === "rss" ? ` · <span class="src" title="Titulní stranu nešlo stáhnout, články jsou z RSS kanálu seřazené podle času vydání, ne podle důležitosti.">nejnovější z RSS</span>` : "";
+      html.push(`<div class="when">${fmtTime.format(b.start)}–${fmtTime.format(b.end)}${src}</div>`);
       b.top.forEach((idx, rank) => {
         const a = day.articles[idx];
         const fresh = !prevTop.includes(idx);

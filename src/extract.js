@@ -116,3 +116,26 @@ export function extractArticles(html, site, opts = {}) {
       perex: perexOf($, v.anchor, link, v.headline, site, baseUrl),
     }));
 }
+
+/**
+ * Vytáhne články z RSS kanálu (nejnovější první).
+ * @param {string} xml
+ * @param {import("./sites.js").Site} site
+ * @returns {Article[]}
+ */
+export function extractFeed(xml, site, { limit = 30 } = {}) {
+  const $ = cheerio.load(xml, { xmlMode: true });
+  const seen = new Set();
+  const out = [];
+  $("item").each((_, el) => {
+    const $el = $(el);
+    const link = normalizeUrl(clean($el.children("link").first().text()), site.url);
+    if (!isArticle(link, site) || seen.has(link)) return;
+    seen.add(link);
+    const headline = clean($el.children("title").first().text());
+    // popis bývá HTML uvnitř CDATA
+    const perex = clean(cheerio.load(`<div>${$el.children("description").first().text()}</div>`)("div").text());
+    if (headline) out.push({ link, headline, perex: perex.length > 400 ? perex.slice(0, 397) + "…" : perex });
+  });
+  return out.slice(0, limit);
+}

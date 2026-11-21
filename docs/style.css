@@ -144,6 +144,7 @@ a { color: inherit; }
   gap: 4px;
 }
 .when { font: 600 11px/1.2 var(--ui); color: var(--muted); font-variant-numeric: tabular-nums; }
+.when .src { font-weight: 400; font-style: italic; cursor: help; }
 
 .item {
   display: block;
