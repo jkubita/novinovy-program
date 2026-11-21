@@ -90,6 +90,7 @@ export async function updateIndex(dataDir, sites, date, status) {
   if (!index.days.includes(date)) index.days.push(date);
   index.days.sort();
   index.status = { ...index.status, ...status };
+  for (const id of Object.keys(index.status)) if (!sites.some((s) => s.id === id)) delete index.status[id];
   index.updated = Date.now();
   await writeJson(path, index);
 }

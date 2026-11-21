@@ -2,7 +2,7 @@
 
 Každou hodinu stáhne titulní strany českých zpravodajských webů, uloží si, které články byly nahoře, a zobrazí to jako časovou osu: co bylo kdy na čele, jak dlouho tam vydrželo a jak se měnily titulky.
 
-Sledované weby: **iDNES.cz, Novinky.cz, Hospodářské noviny, Seznam Zprávy, Deník N, Aktuálně.cz, iROZHLAS**.
+Sledované weby: **iDNES.cz, Novinky.cz, Hospodářské noviny, Seznam Zprávy, Deník N, Aktuálně.cz**.
 
 Inspirováno projektem [Novinový program](https://www.novinovyprogram.cz/). Kód je napsaný nově.
 

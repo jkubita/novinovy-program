@@ -106,26 +106,16 @@ test("Aktuálně: články ze subdomén a online reportáže, rubriky se ignoruj
   assert.equal(res[1].link, "https://zpravy.aktualne.cz/zahranici/online-valka/l~fedcba9876543210fedcba9876543210/");
 });
 
-test("iROZHLAS: relativní odkazy s datem v URL, sekce se ignorují", () => {
-  const html = `<body>
-    <a href="/zpravy-domov">Zprávy z domova a další rubriky</a>
-    <article><h3><a href="/zpravy-domov/snemovna-rozpocet-hlasovani_2611211234_ako">Sněmovna bude hlasovat o rozpočtu</a></h3><p>${PEREX}</p></article>
-    <article><a href="https://www.irozhlas.cz/zpravy-svet/nato-summit_2611210915_jgr"><h3>Summit NATO skončil bez dohody</h3></a></article>
-  </body>`;
-  const res = extractArticles(html, getSite("irozhlas"));
-  assert.deepEqual(res.map((a) => a.link), ["https://www.irozhlas.cz/zpravy-domov/snemovna-rozpocet-hlasovani_2611211234_ako", "https://www.irozhlas.cz/zpravy-svet/nato-summit_2611210915_jgr"]);
-  assert.equal(res[0].perex, PEREX);
-});
-
 test("RSS: titulky, odkazy bez utm a perex bez HTML z CDATA", () => {
-  const xml = `<?xml version="1.0" encoding="utf-8"?><rss version="2.0"><channel><title>iROZHLAS</title>
-    <item><title>Sněmovna bude hlasovat o rozpočtu</title><link>https://www.irozhlas.cz/zpravy-domov/snemovna-rozpocet_2611211234_ako?utm_source=rss</link>
+  const site = { id: "test", name: "Test", url: "https://www.example.cz/", article: /^https:\/\/www\.example\.cz\/clanek\/\d+$/ };
+  const xml = `<?xml version="1.0" encoding="utf-8"?><rss version="2.0"><channel><title>Test</title>
+    <item><title>Sněmovna bude hlasovat o rozpočtu</title><link>https://www.example.cz/clanek/101?utm_source=rss</link>
       <description><![CDATA[<p>${PEREX}</p>]]></description></item>
-    <item><title>Rubrika, ne článek</title><link>https://www.irozhlas.cz/zpravy-domov</link></item>
-    <item><title>Summit NATO skončil bez dohody</title><link>https://www.irozhlas.cz/zpravy-svet/nato_2611210915_jgr</link></item>
+    <item><title>Rubrika, ne článek</title><link>https://www.example.cz/rubrika</link></item>
+    <item><title>Summit NATO skončil bez dohody</title><link>https://www.example.cz/clanek/102</link></item>
   </channel></rss>`;
-  const res = extractFeed(xml, getSite("irozhlas"));
-  assert.deepEqual(res.map((a) => a.link), ["https://www.irozhlas.cz/zpravy-domov/snemovna-rozpocet_2611211234_ako", "https://www.irozhlas.cz/zpravy-svet/nato_2611210915_jgr"]);
+  const res = extractFeed(xml, site);
+  assert.deepEqual(res.map((a) => a.link), ["https://www.example.cz/clanek/101", "https://www.example.cz/clanek/102"]);
   assert.equal(res[0].headline, "Sněmovna bude hlasovat o rozpočtu");
   assert.equal(res[0].perex, PEREX);
 });
