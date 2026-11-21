@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Novinový program</title>
+  <meta name="description" content="Co bylo kdy na titulních stránkách českých zpravodajských webů.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <h1>Novinový program</h1>
+      <p class="tagline">Co bylo kdy na titulních stránkách, po 15 minutách</p>
+    </div>
+    <nav class="controls" aria-label="Ovládání">
+      <div class="daynav">
+        <button id="prev" type="button" aria-label="Předchozí den">‹</button>
+        <select id="day" aria-label="Den"></select>
+        <button id="next" type="button" aria-label="Další den">›</button>
+      </div>
+      <label class="opt">Článků
+        <select id="depth">
+          <option value="1">1</option>
+          <option value="3" selected>3</option>
+          <option value="5">5</option>
+        </select>
+      </label>
+      <label class="opt"><input type="checkbox" id="changes" checked> Jen změny</label>
+    </nav>
+  </header>
+
+  <p id="status" class="status" role="status"></p>
+
+  <main id="board" class="board" aria-live="polite"></main>
+
+  <dialog id="detail">
+    <form method="dialog"><button class="close" aria-label="Zavřít">×</button></form>
+    <div id="detail-body"></div>
+  </dialog>
+
+  <footer class="foot">
+    Prototyp inspirovaný projektem <a href="https://www.novinovyprogram.cz/">Novinový program</a>.
+    Data se stahují automaticky každých 15 minut.
+  </footer>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
