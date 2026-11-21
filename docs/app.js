@@ -1,8 +1,9 @@
 const DATA = "data";
 const SLOT = 60 * 60 * 1000; // interval stahování (viz .github/workflows/scrape.yml)
+const HOUR_PX = { 1: 150, 3: 230, 5: 320 }; // výška jedné hodiny na časové ose podle počtu článků
 
 const $ = (id) => document.getElementById(id);
-const els = { day: $("day"), prev: $("prev"), next: $("next"), depth: $("depth"), changes: $("changes"), board: $("board"), status: $("status"), detail: $("detail"), body: $("detail-body") };
+const els = { day: $("day"), prev: $("prev"), next: $("next"), depth: $("depth"), board: $("board"), status: $("status"), detail: $("detail"), body: $("detail-body") };
 
 const fmtTime = new Intl.DateTimeFormat("cs-CZ", { timeZone: "Europe/Prague", hour: "2-digit", minute: "2-digit" });
 const fmtDateTime = new Intl.DateTimeFormat("cs-CZ", { timeZone: "Europe/Prague", day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -36,68 +37,83 @@ function renderStatus() {
   els.status.innerHTML = parts.join(" · ");
 }
 
+const slotStart = (time) => Math.floor(time / SLOT) * SLOT;
+
+/**
+ * Rozdělí den jednoho webu na bloky: úseky, během kterých se nezměnilo
+ * pořadí prvních `depth` článků. Každý blok trvá od prvního snímku do
+ * dalšího odlišného snímku (výpadek stahování blok ukončí).
+ */
+function toBlocks(day, depth) {
+  const blocks = [];
+  let cur = null;
+  for (const snap of day?.snapshots ?? []) {
+    const top = snap.top.slice(0, depth);
+    const key = top.join(",");
+    const start = slotStart(snap.time);
+    if (cur && cur.key === key && start - cur.end < SLOT / 2) {
+      cur.end = start + SLOT;
+      continue;
+    }
+    if (cur && start < cur.end) cur.end = start;
+    cur = { key, top, start, end: start + SLOT, time: snap.time };
+    blocks.push(cur);
+  }
+  return blocks;
+}
+
 function render() {
   const depth = Number(els.depth.value);
-  const onlyChanges = els.changes.checked;
   const sites = index.sites;
+  const perSite = sites.map((s) => toBlocks(days[s.id], depth));
+  const all = perSite.flat();
 
-  // Pro každý web: slot -> poslední snímek v tom slotu.
-  const bySite = sites.map((s) => {
-    const day = days[s.id];
-    const m = new Map();
-    for (const snap of day?.snapshots ?? []) m.set(Math.floor(snap.time / SLOT), snap);
-    return m;
-  });
-  const slots = [...new Set(bySite.flatMap((m) => [...m.keys()]))].sort((a, b) => a - b);
-
-  if (!slots.length) {
+  if (!all.length) {
     els.board.innerHTML = `<p class="empty-state">Pro tento den zatím nejsou žádná data.</p>`;
     return;
   }
 
-  // Projdeme sloty od nejstaršího a u každé buňky si poznamenáme, co je nové.
-  const prev = sites.map(() => null); // poslední známý snímek každého webu
-  const rows = [];
-  for (const slot of slots) {
-    let changed = rows.length === 0;
-    const cells = sites.map((site, i) => {
-      const snap = bySite[i].get(slot);
-      if (!snap) return null;
-      const day = days[site.id];
-      const before = prev[i];
-      const beforeTop = before ? before.top.slice(0, depth) : [];
-      const items = snap.top.slice(0, depth).map((idx, rank) => {
-        const a = day.articles[idx];
-        const headline = headlineAt(a, snap.time);
-        const isNew = !beforeTop.includes(idx);
-        const edited = !isNew && headlineAt(a, before.time) !== headline;
-        const moved = !isNew && beforeTop.indexOf(idx) !== rank;
-        if (isNew || edited || moved) changed = true;
-        return { idx, rank, headline, isNew: isNew && !!before, edited };
-      });
-      if (!before) changed = true;
-      prev[i] = snap;
-      return items;
-    });
-    if (changed || !onlyChanges) rows.push({ slot, cells });
-  }
+  const t0 = Math.min(...all.map((b) => b.start));
+  const t1 = Math.max(...all.map((b) => b.end));
+  const hourPx = HOUR_PX[depth] ?? 150;
+  const y = (t) => ((t - t0) / 3600000) * hourPx;
+  const height = y(t1);
 
-  const html = [`<div class="grid" style="--cols:${sites.length}">`, `<div class="head time"></div>`];
+  const html = [`<div class="timeline" style="--cols:${sites.length}">`];
+
+  // Záhlaví sloupců (lepí se k hornímu okraji okna).
+  html.push(`<div class="heads"><div class="corner"></div>`);
   for (const s of sites) html.push(`<div class="head" style="--site:${s.color}"><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a></div>`);
-  for (const row of rows) {
-    html.push(`<div class="time">${fmtTime.format(row.slot * SLOT)}</div>`);
-    row.cells.forEach((items, i) => {
-      const s = sites[i];
-      if (!items) return html.push(`<div class="cell empty" style="--site:${s.color}" title="Žádný snímek"></div>`);
-      html.push(`<div class="cell" style="--site:${s.color}"><ul class="items">`);
-      for (const it of items) {
-        const cls = ["item", `rank-${it.rank}`, it.isNew ? "new" : "same", it.edited ? "changed" : ""].join(" ");
-        html.push(`<li><button type="button" class="${cls}" data-site="${s.id}" data-idx="${it.idx}" data-key="${s.id}:${it.idx}">${esc(it.headline)}</button></li>`);
-      }
-      html.push(`</ul></div>`);
-    });
-  }
+  html.push(`</div><div class="lanes" style="height:${height}px">`);
+
+  // Časová osa s hodinami.
+  html.push(`<div class="axis">`);
+  for (let t = t0; t < t1; t += 3600000) html.push(`<div class="tick" style="top:${y(t)}px">${fmtTime.format(t)}</div>`);
   html.push(`</div>`);
+
+  sites.forEach((s, i) => {
+    const day = days[s.id];
+    html.push(`<div class="lane" style="--site:${s.color}">`);
+    let prevTop = [];
+    for (const b of perSite[i]) {
+      html.push(`<section class="block" style="top:${y(b.start)}px;height:${y(b.end) - y(b.start)}px"><div class="block-content">`);
+      html.push(`<div class="when">${fmtTime.format(b.start)}–${fmtTime.format(b.end)}</div>`);
+      b.top.forEach((idx, rank) => {
+        const a = day.articles[idx];
+        const fresh = !prevTop.includes(idx);
+        const cls = ["item", `rank-${rank}`, fresh ? "new" : "same"].join(" ");
+        html.push(`<button type="button" class="${cls}" data-site="${s.id}" data-idx="${idx}" data-key="${s.id}:${idx}">`);
+        html.push(`<span class="headline">${esc(headlineAt(a, b.time))}</span>`);
+        if (rank === 0 && a.perex) html.push(`<span class="perex">${esc(a.perex)}</span>`);
+        html.push(`</button>`);
+      });
+      html.push(`</div></section>`);
+      prevTop = b.top;
+    }
+    html.push(`</div>`);
+  });
+
+  html.push(`</div></div>`);
   els.board.innerHTML = html.join("");
 }
 
@@ -109,7 +125,7 @@ function showDetail(siteId, idx) {
   const onTop = day.snapshots.filter((s) => s.top.slice(0, depth).includes(idx));
   const best = Math.min(...day.snapshots.filter((s) => s.top.includes(idx)).map((s) => s.top.indexOf(idx)));
   const minutes = onTop.length * (SLOT / 60000);
-  const dur = minutes >= 60 ? `${Math.floor(minutes / 60)} h ${minutes % 60} min` : `${minutes} min`;
+  const dur = minutes >= 60 ? `${Math.floor(minutes / 60)} h${minutes % 60 ? ` ${minutes % 60} min` : ""}` : `${minutes} min`;
   els.body.innerHTML = `
     <div class="site">${esc(site.name)}</div>
     <h2>${esc(a.headline)}</h2>
@@ -118,7 +134,7 @@ function showDetail(siteId, idx) {
       <dt>Poprvé na titulce</dt><dd>${fmtDateTime.format(a.firstSeen)}</dd>
       <dt>Naposledy</dt><dd>${fmtDateTime.format(a.lastSeen)}</dd>
       <dt>Nejvyšší pozice</dt><dd>${best + 1}.</dd>
-      <dt>V top ${depth}</dt><dd>${onTop.length ? `asi ${dur}` : "ne"}</dd>
+      <dt>${depth === 1 ? "Hlavním článkem" : `V top ${depth}`}</dt><dd>${onTop.length ? `asi ${dur}` : "ne"}</dd>
     </dl>
     ${a.history.length ? `<p><strong>Změny titulku</strong></p><ol>${a.history.map((h) => `<li>${fmtTime.format(h.time)}: ${esc(h.headline)}</li>`).join("")}</ol>` : ""}
     <a class="go" href="${esc(a.link)}" target="_blank" rel="noopener">Otevřít článek ↗</a>`;
@@ -155,7 +171,6 @@ async function init() {
   els.prev.addEventListener("click", () => go(index.days[index.days.indexOf(els.day.value) - 1]));
   els.next.addEventListener("click", () => go(index.days[index.days.indexOf(els.day.value) + 1]));
   els.depth.addEventListener("change", render);
-  els.changes.addEventListener("change", render);
   window.addEventListener("hashchange", () => loadDay(currentDay()));
 
   els.board.addEventListener("click", (e) => {
