@@ -81,7 +81,6 @@ function render() {
     });
     if (changed || !onlyChanges) rows.push({ slot, cells });
   }
-  rows.reverse(); // nejnovější nahoře
 
   const html = [`<div class="grid" style="--cols:${sites.length}">`, `<div class="head time"></div>`];
   for (const s of sites) html.push(`<div class="head" style="--site:${s.color}"><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a></div>`);
