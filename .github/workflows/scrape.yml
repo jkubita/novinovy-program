@@ -2,7 +2,7 @@ name: Stažení titulních stran
 
 on:
   schedule:
-    - cron: "*/15 * * * *" # GitHub cron může běh o pár minut zpozdit
+    - cron: "7 * * * *" # každou hodinu v xx:07 (ne v celou, kdy je GitHub přetížený a běhy zpožďuje)
   workflow_dispatch: {}
 
 permissions:

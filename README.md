@@ -1,6 +1,6 @@
 # Novinový program (prototyp)
 
-Každých 15 minut stáhne titulní strany českých zpravodajských webů, uloží si, které články byly nahoře, a zobrazí to jako časovou osu: co bylo kdy na čele, jak dlouho tam vydrželo a jak se měnily titulky.
+Každou hodinu stáhne titulní strany českých zpravodajských webů, uloží si, které články byly nahoře, a zobrazí to jako časovou osu: co bylo kdy na čele, jak dlouho tam vydrželo a jak se měnily titulky.
 
 Sledované weby: **iDNES.cz, Novinky.cz, Hospodářské noviny, Seznam Zprávy, Deník N**.
 
@@ -9,7 +9,7 @@ Inspirováno projektem [Novinový program](https://www.novinovyprogram.cz/). Kó
 ## Jak to funguje
 
 ```
-GitHub Actions (cron */15)
+GitHub Actions (cron každou hodinu)
    └─ src/scrape.js ── stáhne HTML ─▶ src/extract.js ─▶ src/store.js ─▶ docs/data/YYYY-MM-DD/<web>.json
                                                                                   │
 GitHub Pages (složka docs/) ◀──────────── docs/index.html + app.js čte JSONy ◀─────┘
@@ -53,7 +53,7 @@ npm test          # testy
 
 1. Pushněte repozitář na GitHub.
 2. **Settings → Pages**: Source „Deploy from a branch“, větev `main`, složka `/docs`.
-3. **Actions**: workflow „Stažení titulních stran“ se spouští sám každých 15 minut. Poprvé ho můžete pustit ručně (Run workflow).
+3. **Actions**: workflow „Stažení titulních stran“ se spouští sám každou hodinu (v xx:07). Poprvé ho můžete pustit ručně (Run workflow).
 
 GitHub plánované běhy občas o pár minut zpozdí a v neaktivních repozitářích je po 60 dnech vypne. Každý snímek je jeden commit, takže historie repozitáře poroste (řádově 100 commitů denně). Pro prototyp to nevadí. Pro ostrý provoz by bylo lepší ukládat data mimo git (S3/R2 nebo databáze).
 

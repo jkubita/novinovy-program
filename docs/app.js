@@ -1,5 +1,5 @@
 const DATA = "data";
-const SLOT = 15 * 60 * 1000;
+const SLOT = 60 * 60 * 1000; // interval stahování (viz .github/workflows/scrape.yml)
 
 const $ = (id) => document.getElementById(id);
 const els = { day: $("day"), prev: $("prev"), next: $("next"), depth: $("depth"), changes: $("changes"), board: $("board"), status: $("status"), detail: $("detail"), body: $("detail-body") };
@@ -109,7 +109,7 @@ function showDetail(siteId, idx) {
   const depth = Number(els.depth.value);
   const onTop = day.snapshots.filter((s) => s.top.slice(0, depth).includes(idx));
   const best = Math.min(...day.snapshots.filter((s) => s.top.includes(idx)).map((s) => s.top.indexOf(idx)));
-  const minutes = onTop.length * 15;
+  const minutes = onTop.length * (SLOT / 60000);
   const dur = minutes >= 60 ? `${Math.floor(minutes / 60)} h ${minutes % 60} min` : `${minutes} min`;
   els.body.innerHTML = `
     <div class="site">${esc(site.name)}</div>
