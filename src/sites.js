@@ -59,6 +59,23 @@ export const SITES = [
     exclude: /denikn\.cz\/(minuta|autor|tag|cast)\//i,
     color: "#111111",
   },
+  {
+    id: "aktualne",
+    name: "Aktuálně.cz",
+    url: "https://www.aktualne.cz/",
+    // https://zpravy.aktualne.cz/domaci/nazev-clanku/r~0123456789abcdef0123456789abcdef/
+    // (l~… jsou online reportáže, ty bývají hlavním článkem taky)
+    article: /^https?:\/\/([a-z0-9-]+\.)*aktualne\.cz\/.*\/[rl]~[0-9a-f]{20,}\/?$/i,
+    color: "#ef7d00",
+  },
+  {
+    id: "irozhlas",
+    name: "iROZHLAS",
+    url: "https://www.irozhlas.cz/",
+    // https://www.irozhlas.cz/zpravy-domov/nazev-clanku_2611211234_abc
+    article: /^https?:\/\/(www\.)?irozhlas\.cz(\/[a-z0-9-]+)+_\d{10}_[a-z0-9]+\/?$/i,
+    color: "#0a8f8f",
+  },
 ];
 
 export const getSite = (id) => SITES.find((s) => s.id === id);

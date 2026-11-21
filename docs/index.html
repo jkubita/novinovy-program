@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Novinový program</title>
   <meta name="description" content="Co bylo kdy na titulních stránkách českých zpravodajských webů.">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
   <header class="top">
@@ -42,6 +42,14 @@
     Titulní strany předních českých zpravodajských webů. Autor projektu Jan Kubita. Titulky a perexy © jednotliví vydavatelé.
     Data se stahují automaticky každou hodinu.
   </footer>
-  <script type="module" src="app.js"></script>
+  <script>
+    // Když skript selže (např. starší verze v cache prohlížeče), ukážeme hlášku místo prázdné stránky.
+    window.addEventListener("error", function () {
+      var b = document.getElementById("board");
+      if (b && !b.querySelector(".timeline")) b.innerHTML = '<p class="empty-state">Stránku se nepodařilo načíst. Zkuste ji obnovit (Ctrl+F5).</p>';
+    });
+  </script>
+  <!-- Při změně app.js nebo style.css zvyšte ?v=, jinak prohlížeče můžou míchat starou a novou verzi. -->
+  <script type="module" src="app.js?v=4"></script>
 </body>
 </html>

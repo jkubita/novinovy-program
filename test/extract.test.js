@@ -93,6 +93,30 @@ test("Deník N: ignoruje Minutu, autory a tagy", () => {
   assert.equal(res[0].perex, PEREX);
 });
 
+test("Aktuálně: články ze subdomén a online reportáže, rubriky se ignorují", () => {
+  const html = `<body>
+    <a href="https://zpravy.aktualne.cz/domaci/">Domácí zprávy z celé republiky</a>
+    <div class="swift-box"><a href="https://zpravy.aktualne.cz/domaci/vlada-schvalila-rozpocet/r~0123456789abcdef0123456789abcdef/"><h2>Vláda schválila rozpočet na příští rok</h2></a><p>${PEREX}</p></div>
+    <div class="swift-box"><a href="https://zpravy.aktualne.cz/zahranici/online-valka/l~fedcba9876543210fedcba9876543210/?utm=x"><h3>ONLINE: Válka na Ukrajině, vývoj situace</h3></a></div>
+    <div class="swift-box"><a href="https://sport.aktualne.cz/fotbal/sparta-vyhrala/r~aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/">Sparta vyhrála derby po penaltách</a></div>
+  </body>`;
+  const res = extractArticles(html, getSite("aktualne"));
+  assert.deepEqual(res.map((a) => a.headline), ["Vláda schválila rozpočet na příští rok", "ONLINE: Válka na Ukrajině, vývoj situace", "Sparta vyhrála derby po penaltách"]);
+  assert.equal(res[0].perex, PEREX);
+  assert.equal(res[1].link, "https://zpravy.aktualne.cz/zahranici/online-valka/l~fedcba9876543210fedcba9876543210/");
+});
+
+test("iROZHLAS: relativní odkazy s datem v URL, sekce se ignorují", () => {
+  const html = `<body>
+    <a href="/zpravy-domov">Zprávy z domova a další rubriky</a>
+    <article><h3><a href="/zpravy-domov/snemovna-rozpocet-hlasovani_2611211234_ako">Sněmovna bude hlasovat o rozpočtu</a></h3><p>${PEREX}</p></article>
+    <article><a href="https://www.irozhlas.cz/zpravy-svet/nato-summit_2611210915_jgr"><h3>Summit NATO skončil bez dohody</h3></a></article>
+  </body>`;
+  const res = extractArticles(html, getSite("irozhlas"));
+  assert.deepEqual(res.map((a) => a.link), ["https://www.irozhlas.cz/zpravy-domov/snemovna-rozpocet-hlasovani_2611211234_ako", "https://www.irozhlas.cz/zpravy-svet/nato-summit_2611210915_jgr"]);
+  assert.equal(res[0].perex, PEREX);
+});
+
 test("kódování windows-1250 se rozpozná z meta tagu", () => {
   const bytes = new Uint8Array([...Buffer.from('<meta charset="windows-1250"><h3>'), 0x8a, 0x9e, 0xe8, ...Buffer.from("</h3>")]);
   const cs = detectCharset("text/html", bytes);

@@ -70,7 +70,7 @@ a { color: inherit; }
 .timeline {
   --head-h: 46px;
   --axis-w: 52px;
-  --col-min: 200px;
+  --col-min: 170px;
   min-width: calc(var(--axis-w) + var(--cols) * var(--col-min));
   background: var(--panel);
   border: 1px solid var(--line);
