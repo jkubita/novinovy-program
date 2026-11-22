@@ -1,4 +1,4 @@
-# Novinový program (prototyp)
+# Novinárna (prototyp)
 
 Každou hodinu stáhne titulní strany českých zpravodajských webů, uloží si, které články byly nahoře, a zobrazí to jako časovou osu: co bylo kdy na čele, jak dlouho tam vydrželo a jak se měnily titulky.
 

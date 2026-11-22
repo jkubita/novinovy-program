@@ -20,4 +20,4 @@ createServer(async (req, res) => {
   } catch {
     res.writeHead(404).end("Not found");
   }
-}).listen(PORT, () => console.log(`Novinový program běží na http://localhost:${PORT}/`));
+}).listen(PORT, () => console.log(`Novinárna běží na http://localhost:${PORT}/`));
