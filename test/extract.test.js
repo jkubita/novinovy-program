@@ -82,6 +82,16 @@ test("Seznam Zprávy: nadpis vedle odkazu s aria-label", () => {
   assert.deepEqual(res.map((a) => a.headline), ["Sněmovna schválila rozpočet na příští rok", "Ukrajina hlásí průlom na jihu fronty"]);
 });
 
+test("Seznam Zprávy: menu a proužek doporučených článků před hlavním článkem se ignorují", () => {
+  const html = `<body>
+    <div class="ribbon"><ul class="ribbon-menu"><li class="ribbon-menu__item"><a href="https://www.seznamzpravy.cz/clanek/zdravi-plus-mapa-ortopedu-ordinace-praha-vsechny-kraje-301728">Mapa ortopedů v celé republice</a></li></ul></div>
+    <div data-dot="ogm-horizontal-timeline"><a href="https://www.seznamzpravy.cz/clanek/zdravi-plus-prichazeji-leky-na-hubnuti-320820"><h3>Přicházejí léky na hubnutí v tabletách</h3></a></div>
+    <div data-dot="ogm-top-story"><a href="https://www.seznamzpravy.cz/clanek/domaci-kutila-nastval-rohlik-321133"><h2>Kutila naštval Rohlík, aplikaci naprogramoval za dvě hodiny</h2></a></div>
+  </body>`;
+  const res = extractArticles(html, getSite("seznamzpravy"));
+  assert.deepEqual(res.map((a) => a.headline), ["Kutila naštval Rohlík, aplikaci naprogramoval za dvě hodiny"]);
+});
+
 test("Deník N: ignoruje Minutu, autory a tagy", () => {
   const html = `<body>
     <a href="https://denikn.cz/minuta/1612000/">Minuta: krátká zpráva z minutového zpravodajství</a>

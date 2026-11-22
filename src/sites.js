@@ -54,6 +54,9 @@ export const SITES = [
     url: "https://www.seznamzpravy.cz/",
     // https://www.seznamzpravy.cz/clanek/domaci-politika-nazev-clanku-271234
     article: /^https?:\/\/(www\.)?seznamzpravy\.cz\/clanek\/[a-z0-9-]+-\d{5,}\/?$/i,
+    // Menu (např. „Mapa ortopedů“) a proužek doporučených článků jsou v HTML před hlavním
+    // článkem (ogm-top-story), takže by se tvářily jako nejdůležitější.
+    strip: '[class*="ribbon"], [data-dot="ogm-horizontal-timeline"]',
     color: "#cc0000",
   },
   {
