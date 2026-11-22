@@ -198,4 +198,28 @@ dialog .go { display: inline-block; margin-top: 8px; font-weight: 600; color: va
   .brand h1 { font-size: 23px; }
   .timeline { --axis-w: 44px; --col-min: 72vw; }
   .tick { padding-right: 4px; }
+
+  /* Mobil: hlavička (název, výběr dne) zůstává nahoře a posouvá se jen
+     oblast s časovou osou. Záhlaví médií se lepí k jejímu hornímu okraji. */
+  body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .top { flex: none; position: static; padding: 10px 12px 8px; gap: 8px 16px; align-items: center; }
+  .tagline { display: none; }
+  .status { flex: none; position: static; margin: 4px 12px; }
+  .scroll {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .scroll-inner { width: max-content; min-width: 100%; }
+  .board { padding: 0 8px; margin-bottom: 16px; }
+  .timeline { border-radius: 0; }
+  .heads, .corner { border-radius: 0; }
+  .foot { max-width: 100vw; }
 }

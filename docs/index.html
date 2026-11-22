@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Novinárna</title>
   <meta name="description" content="Co bylo kdy na titulních stránkách českých zpravodajských webů.">
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
   <header class="top">
@@ -31,18 +31,21 @@
 
   <p id="status" class="status" role="status"></p>
 
+  <div class="scroll">
+  <div class="scroll-inner">
   <main id="board" class="board" aria-live="polite"></main>
-
-  <dialog id="detail">
-    <form method="dialog"><button class="close" aria-label="Zavřít">×</button></form>
-    <div id="detail-body"></div>
-  </dialog>
 
   <footer class="foot">
     Titulní strany předních českých zpravodajských webů. Provozuje <a href="https://www.linkedin.com/in/jan-kubita-a3768529/" target="_blank" rel="noopener">Jan Kubita</a>.
     Inspirováno projektem <a href="https://www.novinovyprogram.cz/" target="_blank" rel="noopener">novinovyprogram.cz</a> Marcela Šulka. Titulky a perexy © jednotliví vydavatelé.
     Data se stahují automaticky každou hodinu.
   </footer>
+  </div>
+  </div>
+  <dialog id="detail">
+    <form method="dialog"><button class="close" aria-label="Zavřít">×</button></form>
+    <div id="detail-body"></div>
+  </dialog>
   <script>
     // Když skript selže (např. starší verze v cache prohlížeče), ukážeme hlášku místo prázdné stránky.
     window.addEventListener("error", function () {
@@ -51,6 +54,6 @@
     });
   </script>
   <!-- Při změně app.js nebo style.css zvyšte ?v=, jinak prohlížeče můžou míchat starou a novou verzi. -->
-  <script type="module" src="app.js?v=5"></script>
+  <script type="module" src="app.js?v=6"></script>
 </body>
 </html>
