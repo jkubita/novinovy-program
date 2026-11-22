@@ -31,8 +31,12 @@ const isArticle = (url, site) =>
   !!url && site.article.test(url) && !(site.exclude && site.exclude.test(url));
 
 /** Titulek z odkazu a jeho okolí, s „důvěryhodností“ (vyšší = lepší). */
-function headlineOf($, a) {
+function headlineOf($, a, site) {
   const $a = $(a);
+  if (site.titleAttr) {
+    const t = clean($a.attr("aria-label") || $a.attr("title"));
+    if (t) return { text: t, score: 4 };
+  }
   const inner = clean($a.find(HEADING).first().text());
   if (inner) return { text: inner, score: 3 };
   const outer = clean($a.closest(HEADING).text());
@@ -86,6 +90,7 @@ export function extractArticles(html, site, opts = {}) {
   const { limit = 30, baseUrl = site.url } = opts;
   const $ = cheerio.load(html);
   $("script, style, noscript, template, svg, nav, footer, iframe").remove();
+  if (site.strip) $(site.strip).remove();
   const root = site.scope && $(site.scope).length ? $(site.scope) : $("body");
 
   /** @type {Map<string, {pos: number, headline: string, score: number, anchor: any}>} */
@@ -94,7 +99,7 @@ export function extractArticles(html, site, opts = {}) {
   root.find("a[href]").each((_, a) => {
     const url = normalizeUrl($(a).attr("href"), baseUrl);
     if (!isArticle(url, site)) return;
-    const h = headlineOf($, a);
+    const h = headlineOf($, a, site);
     const ok = h.text.length >= 12 && h.text.length <= 300;
     const prev = byUrl.get(url);
     if (!prev) {

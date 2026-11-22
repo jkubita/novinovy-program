@@ -11,8 +11,28 @@ const fmtDay = (d) => new Intl.DateTimeFormat("cs-CZ", { weekday: "short", day: 
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
+const COLS = 6; // počet sloupců; čtenář si v každém vybírá médium
+const STORE_KEY = "novinarna.sloupce";
+
 let index = null;
-let days = {}; // siteId -> denní záznam (nebo null)
+let date = null;
+let days = {}; // siteId -> denní záznam (nebo null) pro aktuální den
+let cols = []; // id médií v jednotlivých sloupcích
+
+/** Uložený výběr sloupců, doplněný a očištěný podle aktuálního seznamu webů. */
+function loadCols() {
+  const ids = index.sites.map((s) => s.id);
+  let saved = [];
+  try { saved = JSON.parse(localStorage.getItem(STORE_KEY) || "[]"); } catch {}
+  const out = [];
+  for (const id of Array.isArray(saved) ? saved : []) if (ids.includes(id) && !out.includes(id)) out.push(id);
+  for (const id of ids) if (out.length < Math.min(COLS, ids.length) && !out.includes(id)) out.push(id);
+  return out.slice(0, COLS);
+}
+function saveCols() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(cols)); } catch {}
+}
+const siteById = (id) => index.sites.find((s) => s.id === id);
 
 async function getJson(path) {
   const res = await fetch(path, { cache: "no-cache" });
@@ -60,17 +80,14 @@ function toBlocks(day, depth) {
 
 function render() {
   const depth = Number(els.depth.value);
-  const sites = index.sites;
+  const sites = cols.map(siteById);
   const perSite = sites.map((s) => toBlocks(days[s.id], depth));
   const all = perSite.flat();
 
-  if (!all.length) {
-    els.board.innerHTML = `<p class="empty-state">Pro tento den zatím nejsou žádná data.</p>`;
-    return;
-  }
-
-  const t0 = Math.min(...all.map((b) => b.start));
-  const t1 = Math.max(...all.map((b) => b.end));
+  // Bez dat zobrazíme aspoň záhlaví s výběrem médií, ať jde sloupec přepnout.
+  const now = Date.now();
+  const t0 = all.length ? Math.min(...all.map((b) => b.start)) : slotStart(now);
+  const t1 = all.length ? Math.max(...all.map((b) => b.end)) : slotStart(now) + SLOT;
   const hourPx = HOUR_PX[depth] ?? 150;
   const y = (t) => ((t - t0) / 3600000) * hourPx;
   const height = y(t1);
@@ -79,7 +96,12 @@ function render() {
 
   // Záhlaví sloupců (lepí se k hornímu okraji okna).
   html.push(`<div class="heads"><div class="corner"></div>`);
-  for (const s of sites) html.push(`<div class="head" style="--site:${s.color}"><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a></div>`);
+  sites.forEach((s, i) => {
+    const opts = index.sites.map((o) => `<option value="${o.id}"${o.id === s.id ? " selected" : ""}>${esc(o.name)}</option>`).join("");
+    html.push(`<div class="head" style="--site:${s.color}">`
+      + `<div class="row"><label class="pick"><span class="name">${esc(s.name)}</span><select data-col="${i}" aria-label="Médium ve sloupci ${i + 1}">${opts}</select></label>`
+      + `<a class="visit" href="${esc(s.url)}" target="_blank" rel="noopener" title="Otevřít ${esc(s.name)}" aria-label="Otevřít ${esc(s.name)}">↗</a></div></div>`);
+  });
   html.push(`</div><div class="lanes" style="height:${height}px">`);
 
   // Časová osa s hodinami.
@@ -90,6 +112,10 @@ function render() {
   sites.forEach((s, i) => {
     const day = days[s.id];
     html.push(`<div class="lane" style="--site:${s.color}">`);
+    if (!perSite[i].length) {
+      html.push(`<p class="lane-empty">Pro tento den zatím bez dat.</p></div>`);
+      return;
+    }
     let prevTop = [];
     for (const b of perSite[i]) {
       html.push(`<section class="block" style="top:${y(b.start)}px;height:${y(b.end) - y(b.start)}px"><div class="block-content">`);
@@ -115,7 +141,7 @@ function render() {
 }
 
 function showDetail(siteId, idx) {
-  const site = index.sites.find((s) => s.id === siteId);
+  const site = siteById(siteId);
   const day = days[siteId];
   const a = day.articles[idx];
   const depth = Number(els.depth.value);
@@ -138,10 +164,18 @@ function showDetail(siteId, idx) {
   els.detail.showModal();
 }
 
-async function loadDay(date) {
+/** Načte data zobrazených médií, která pro aktuální den ještě nemáme. */
+async function ensureLoaded() {
+  const missing = cols.filter((id) => !(id in days));
+  const loaded = await Promise.all(missing.map((id) => getJson(`${DATA}/${date}/${id}.json`).catch(() => null)));
+  missing.forEach((id, i) => { days[id] = loaded[i]; });
+}
+
+async function loadDay(d) {
   els.board.innerHTML = `<p class="empty-state">Načítám…</p>`;
-  const loaded = await Promise.all(index.sites.map((s) => getJson(`${DATA}/${date}/${s.id}.json`).catch(() => null)));
-  days = Object.fromEntries(index.sites.map((s, i) => [s.id, loaded[i]]));
+  date = d;
+  days = {};
+  await ensureLoaded();
   const i = index.days.indexOf(date);
   els.prev.disabled = i <= 0;
   els.next.disabled = i >= index.days.length - 1;
@@ -162,6 +196,7 @@ async function init() {
     return;
   }
   renderStatus();
+  cols = loadCols();
   els.day.innerHTML = [...index.days].reverse().map((d) => `<option value="${d}">${fmtDay(d)}</option>`).join("");
   const go = (d) => { location.hash = d; };
   els.day.addEventListener("change", () => go(els.day.value));
@@ -181,6 +216,18 @@ async function init() {
     els.board.querySelectorAll(".item.hl").forEach((n) => n.classList.remove("hl"));
     if (key) els.board.querySelectorAll(`.item[data-key="${CSS.escape(key)}"]`).forEach((n) => n.classList.add("hl"));
     hl = key;
+  });
+  // Výběr média ve sloupci. Když už je médium v jiném sloupci, sloupce se prohodí.
+  els.board.addEventListener("change", async (e) => {
+    const sel = e.target.closest("select[data-col]");
+    if (!sel) return;
+    const col = Number(sel.dataset.col);
+    const other = cols.indexOf(sel.value);
+    if (other !== -1) cols[other] = cols[col];
+    cols[col] = sel.value;
+    saveCols();
+    await ensureLoaded();
+    render();
   });
   els.detail.addEventListener("click", (e) => { if (e.target === els.detail) els.detail.close(); });
 

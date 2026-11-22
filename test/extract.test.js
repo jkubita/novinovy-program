@@ -106,6 +106,28 @@ test("Aktuálně: články ze subdomén a online reportáže, rubriky se ignoruj
   assert.equal(res[1].link, "https://zpravy.aktualne.cz/zahranici/online-valka/l~fedcba9876543210fedcba9876543210/");
 });
 
+test("Blesk: titulek z atributu title (bez rubriky), placené články z Rádce se ignorují", () => {
+  const html = `<body>
+    <div class="graphic-banners"><a class="graphic-banner__graphic" href="https://www.blesk.cz/clanek/zpravy-politika/853166/mluvci-o-kabelkach.html" title="Mluvčí o drahých kabelkách: Nechte mě být!"><img alt=""></a></div>
+    <a class="article-card" href="https://www.blesk.cz/clanek/zpravy-politika/853166/mluvci-o-kabelkach.html" aria-label="Mluvčí o drahých kabelkách: Nechte mě být!"><span>Politika</span><span>Mluvčí o drahých kabelkách: Nechte mě být!</span></a>
+    <a class="article-card" href="https://www.blesk.cz/clanek/radce/852529/jak-mit-finance-pod-kontrolou.html" aria-label="Jak mít své finance pod kontrolou? Tohle by vás nenapadlo"><span>CNC Native</span></a>
+    <a class="article-card" href="https://www.blesk.cz/clanek/zpravy-krimi/853213/zahadna-otrava.html" title="Záhadná otrava na slovenské základce"><span>Krimi</span><span>Záhadná otrava na slovenské základce</span></a>
+  </body>`;
+  const res = extractArticles(html, getSite("blesk"));
+  assert.deepEqual(res.map((a) => a.headline), ["Mluvčí o drahých kabelkách: Nechte mě být!", "Záhadná otrava na slovenské základce"]);
+});
+
+test("ČT24: štítky Video/Živě se z titulku odstraní, videa mimo články se ignorují", () => {
+  const html = `<body>
+    <a href="/clanek/domaci/nedelni-debata-379830" class="wide-opener"><h3><span class="wc-prefix">Živě</span>Incident v Polsku je pokračováním ruských hrozeb</h3></a>
+    <a href="/clanek/domaci/zachranari-vesty-379825"><h3 class="article-link__title"><span class="wc-prefix wc-prefix--blue">Video</span>Záchranáři se vybavují balistickými vestami</h3></a>
+    <a href="/video/v-ostrave-se-sesli-krampusove-262156"><h3>V Ostravě se sešli Krampusové</h3></a>
+  </body>`;
+  const res = extractArticles(html, getSite("ct24"));
+  assert.deepEqual(res.map((a) => a.headline), ["Incident v Polsku je pokračováním ruských hrozeb", "Záchranáři se vybavují balistickými vestami"]);
+  assert.equal(res[0].link, "https://ct24.ceskatelevize.cz/clanek/domaci/nedelni-debata-379830");
+});
+
 test("RSS: titulky, odkazy bez utm a perex bez HTML z CDATA", () => {
   const site = { id: "test", name: "Test", url: "https://www.example.cz/", article: /^https:\/\/www\.example\.cz\/clanek\/\d+$/ };
   const xml = `<?xml version="1.0" encoding="utf-8"?><rss version="2.0"><channel><title>Test</title>

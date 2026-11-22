@@ -12,6 +12,10 @@
  * @property {RegExp} article     odpovídá absolutní URL článku
  * @property {RegExp} [exclude]   URL, které článek nejsou, i když vypadají podobně
  * @property {string} [scope]     CSS selektor hlavního obsahu (zbytek stránky se ignoruje)
+ * @property {boolean} [titleAttr] titulek brát přednostně z atributu title/aria-label odkazu
+ *                                (web v odkazu míchá titulek s rubrikou nebo štítkem)
+ * @property {string} [strip]     CSS selektor prvků, které se před zpracováním odstraní
+ *                                (např. štítky „Video“, „Živě“ přilepené k titulku)
  * @property {string} [feed]      RSS kanál jako náhrada, když titulní stranu nejde stáhnout.
  *                                Pořadí je pak podle času vydání, ne podle důležitosti.
  * @property {string} color       barva sloupce ve frontendu
@@ -69,6 +73,26 @@ export const SITES = [
     // (l~… jsou online reportáže, ty bývají hlavním článkem taky)
     article: /^https?:\/\/([a-z0-9-]+\.)*aktualne\.cz\/.*\/[rl]~[0-9a-f]{20,}\/?$/i,
     color: "#ef7d00",
+  },
+  {
+    id: "blesk",
+    name: "Blesk.cz",
+    url: "https://www.blesk.cz/",
+    // https://www.blesk.cz/clanek/zpravy-politika/853207/nazev-clanku.html
+    article: /^https?:\/\/(www\.)?blesk\.cz\/clanek\/[a-z0-9-]+\/\d{5,}\/[a-z0-9-]+\.html$/i,
+    // rubrika Rádce nese placené (native) články
+    exclude: /blesk\.cz\/clanek\/radce\//i,
+    titleAttr: true,
+    color: "#e4002b",
+  },
+  {
+    id: "ct24",
+    name: "ČT24",
+    url: "https://ct24.ceskatelevize.cz/",
+    // https://ct24.ceskatelevize.cz/clanek/domaci/nazev-clanku-379831
+    article: /^https?:\/\/ct24\.ceskatelevize\.cz\/clanek\/[a-z0-9-]+\/[a-z0-9-]+-\d{5,}\/?$/i,
+    strip: ".wc-prefix",
+    color: "#0b4ea2",
   },
 ];
 

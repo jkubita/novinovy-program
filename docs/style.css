@@ -90,8 +90,19 @@ a { color: inherit; }
   border-radius: 8px 8px 0 0;
 }
 .corner { position: sticky; left: 0; background: var(--panel); border-radius: 8px 0 0 0; }
-.head { padding: 9px 10px 0; font: 700 15px/1.2 var(--font); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.head a { text-decoration: none; }
+.head { min-width: 0; padding: 9px 6px 0 10px; font: 700 15px/1.2 var(--font); }
+.head .row { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.head .pick { position: relative; display: flex; align-items: center; gap: 4px; flex: 1; min-width: 0; cursor: pointer; }
+.head .pick .name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.head .pick::after { content: "▾"; flex: none; font: 12px/1 var(--ui); color: var(--muted); }
+.head .pick:hover .name { text-decoration: underline; text-underline-offset: 3px; }
+/* Skutečný <select> leží neviditelně přes název, takže se otevře nativní nabídka (i na mobilu). */
+.head select { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; font: 15px var(--ui); }
+.head select:focus-visible { opacity: 0; }
+.head .pick:has(select:focus-visible) { outline: 2px solid var(--site); outline-offset: 2px; border-radius: 3px; }
+.head .visit { flex: none; padding: 0 4px; font: 13px/1.2 var(--ui); color: var(--muted); text-decoration: none; }
+.head .visit:hover { color: var(--ink); }
+.lane-empty { margin: 12px 10px; font-size: 13px; color: var(--muted); }
 .head::before {
   content: "";
   display: block;
