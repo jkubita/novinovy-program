@@ -18,6 +18,8 @@ let index = null;
 let date = null;
 let days = {}; // siteId -> denní záznam (nebo null) pro aktuální den
 let cols = []; // id médií v jednotlivých sloupcích
+// Na mobilu se ukazuje jen první sloupec; médium v něm si čtenář vybírá v záhlaví.
+const mobile = window.matchMedia("(max-width: 600px)");
 
 /** Uložený výběr sloupců, doplněný a očištěný podle aktuálního seznamu webů. */
 function loadCols() {
@@ -80,7 +82,7 @@ function toBlocks(day, depth) {
 
 function render() {
   const depth = Number(els.depth.value);
-  const sites = cols.map(siteById);
+  const sites = (mobile.matches ? cols.slice(0, 1) : cols).map(siteById);
   const perSite = sites.map((s) => toBlocks(days[s.id], depth));
   const all = perSite.flat();
 
@@ -217,6 +219,7 @@ async function init() {
     if (key) els.board.querySelectorAll(`.item[data-key="${CSS.escape(key)}"]`).forEach((n) => n.classList.add("hl"));
     hl = key;
   });
+  mobile.addEventListener("change", () => render());
   // Výběr média ve sloupci. Když už je médium v jiném sloupci, sloupce se prohodí.
   els.board.addEventListener("change", async (e) => {
     const sel = e.target.closest("select[data-col]");

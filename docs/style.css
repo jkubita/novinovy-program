@@ -207,7 +207,10 @@ dialog .go { display: inline-block; margin-top: 8px; font-weight: 600; color: va
 
 @media (max-width: 600px) {
   .brand h1 { font-size: 23px; }
-  .timeline { --axis-w: 44px; --col-min: 72vw; }
+  /* Jeden sloupec přes celou šířku (vybraný médium se mění v záhlaví). */
+  .timeline { --axis-w: 44px; --col-min: 0px; }
+  .head { font-size: 17px; padding-top: 10px; }
+  .head .pick::after { font-size: 14px; }
   .tick { padding-right: 4px; }
 
   /* Mobil: hlavička (název, výběr dne) zůstává nahoře a posouvá se jen
