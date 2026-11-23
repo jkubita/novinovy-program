@@ -1,8 +1,12 @@
 name: Stažení titulních stran
 
 on:
+  # Hlavní spouštění obstarává externí budík (cron-job.org), který každou hodinu
+  # volá workflow_dispatch. Plán GitHubu je jen pojistka: GitHub plánované běhy
+  # často zpožďuje i o desítky minut nebo je úplně vynechá, proto běží dvakrát
+  # za hodinu a sám se přeskočí, pokud jsou data čerstvá.
   schedule:
-    - cron: "7 * * * *" # každou hodinu v xx:07 (ne v celou, kdy je GitHub přetížený a běhy zpožďuje)
+    - cron: "25,55 * * * *"
   workflow_dispatch: {}
 
 permissions:
@@ -18,14 +22,25 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - name: Jsou data čerstvá? (jen u plánovaného běhu)
+        id: fresh
+        if: github.event_name == 'schedule'
+        run: |
+          age=$(node -e 'const d=require("./docs/data/index.json");console.log(Math.round((Date.now()-d.updated)/60000))')
+          echo "Poslední stažení před $age min"
+          if [ "$age" -lt 40 ]; then echo "skip=true" >> "$GITHUB_OUTPUT"; echo "Data jsou čerstvá, přeskakuji."; fi
       - uses: actions/setup-node@v4
+        if: steps.fresh.outputs.skip != 'true'
         with:
           node-version: 22
           cache: npm
       - run: npm ci
+        if: steps.fresh.outputs.skip != 'true'
       - name: Stáhnout a zpracovat weby
+        if: steps.fresh.outputs.skip != 'true'
         run: npm run scrape
       - name: Uložit data do repozitáře
+        if: steps.fresh.outputs.skip != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
