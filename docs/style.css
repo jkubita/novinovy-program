@@ -208,9 +208,28 @@ dialog .go { display: inline-block; margin-top: 8px; font-weight: 600; color: va
 @media (max-width: 600px) {
   .brand h1 { font-size: 23px; }
   /* Jeden sloupec přes celou šířku (vybraný médium se mění v záhlaví). */
-  .timeline { --axis-w: 44px; --col-min: 0px; }
-  .head { font-size: 17px; padding-top: 10px; }
-  .head .pick::after { font-size: 14px; }
+  .timeline { --axis-w: 44px; --col-min: 0px; --head-h: 64px; }
+  .head { font-size: 17px; padding: 12px 8px 0 10px; }
+  /* Výběr média jako zřetelné tlačítko: rámeček, šipka a popisek „Změnit“. */
+  .head .pick {
+    flex: 0 1 auto;
+    gap: 10px;
+    padding: 7px 10px 7px 12px;
+    border: 1.5px solid var(--site);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--site) 7%, transparent);
+  }
+  .head .pick::after {
+    content: "Změnit ▾";
+    padding: 4px 8px;
+    border-radius: 5px;
+    background: var(--site);
+    color: #fff;
+    font: 600 13px/1 var(--ui);
+  }
+  .head .pick:active { background: color-mix(in srgb, var(--site) 16%, transparent); }
+  .head .pick:hover .name { text-decoration: none; }
+  .head .row { gap: 10px; }
   .tick { padding-right: 4px; }
 
   /* Mobil: hlavička (název, výběr dne) zůstává nahoře a posouvá se jen
