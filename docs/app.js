@@ -3,7 +3,7 @@ const SLOT = 60 * 60 * 1000; // interval stahování (viz .github/workflows/scra
 const HOUR_PX = { 1: 150, 3: 230, 5: 320 }; // výška jedné hodiny na časové ose podle počtu článků
 
 const $ = (id) => document.getElementById(id);
-const els = { day: $("day"), prev: $("prev"), next: $("next"), depth: $("depth"), board: $("board"), status: $("status"), detail: $("detail"), body: $("detail-body") };
+const els = { day: $("day"), prev: $("prev"), next: $("next"), depth: $("depth"), board: $("board"), picker: $("picker"), detail: $("detail"), body: $("detail-body") };
 
 const fmtTime = new Intl.DateTimeFormat("cs-CZ", { timeZone: "Europe/Prague", hour: "2-digit", minute: "2-digit" });
 const fmtDateTime = new Intl.DateTimeFormat("cs-CZ", { timeZone: "Europe/Prague", day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -54,11 +54,6 @@ function headlineAt(article, time) {
   return h;
 }
 
-function renderStatus() {
-  if (!index) return;
-  // Chyby stahování se na stránce neukazují, jsou ve výpisu GitHub Actions a v data/index.json.
-  els.status.textContent = `Aktualizováno ${fmtDateTime.format(index.updated)}`;
-}
 
 const slotStart = (time) => Math.floor(time / SLOT) * SLOT;
 
@@ -101,15 +96,21 @@ function render() {
 
   const html = [`<div class="timeline" style="--cols:${sites.length}">`];
 
-  // Záhlaví sloupců (lepí se k hornímu okraji okna).
-  html.push(`<div class="heads"><div class="corner"></div>`);
-  sites.forEach((s, i) => {
+  // Výběr média: v režimu jednoho sloupce uprostřed horní lišty,
+  // jinak jako záhlaví sloupců (lepí se k hornímu okraji okna).
+  const headHtml = (s, i) => {
     const opts = index.sites.map((o) => `<option value="${o.id}"${o.id === s.id ? " selected" : ""}>${esc(o.name)}</option>`).join("");
-    html.push(`<div class="head" style="--site:${s.color}">`
-      + `<div class="row"><label class="pick"><span class="name">${esc(s.name)}</span><select data-col="${i}" aria-label="Médium ve sloupci ${i + 1}">${opts}</select></label>`
-      + `<a class="visit" href="${esc(s.url)}" target="_blank" rel="noopener" title="Otevřít ${esc(s.name)}" aria-label="Otevřít ${esc(s.name)}">↗</a></div></div>`);
-  });
-  html.push(`</div><div class="lanes" style="height:${height}px">`);
+    return `<div class="head" style="--site:${s.color}">`
+      + `<div class="row"><label class="pick"><span class="name">${esc(s.name)}</span><select data-col="${i}" aria-label="Vybrat médium">${opts}</select></label>`
+      + `<a class="visit" href="${esc(s.url)}" target="_blank" rel="noopener" title="Otevřít ${esc(s.name)}" aria-label="Otevřít ${esc(s.name)}">↗</a></div></div>`;
+  };
+  if (singleView()) {
+    els.picker.innerHTML = headHtml(sites[0], 0);
+  } else {
+    els.picker.innerHTML = "";
+    html.push(`<div class="heads"><div class="corner"></div>${sites.map(headHtml).join("")}</div>`);
+  }
+  html.push(`<div class="lanes" style="height:${height}px">`);
 
   // Časová osa s hodinami.
   html.push(`<div class="axis">`);
@@ -202,7 +203,6 @@ async function init() {
     els.board.innerHTML = `<p class="empty-state">Zatím žádná data. Spusťte <code>npm run scrape</code> nebo počkejte na první automatické stažení.</p>`;
     return;
   }
-  renderStatus();
   cols = loadCols();
   els.day.innerHTML = [...index.days].reverse().map((d) => `<option value="${d}">${fmtDay(d)}</option>`).join("");
   const go = (d) => { location.hash = d; };
@@ -226,7 +226,7 @@ async function init() {
   });
   mobile.addEventListener("change", () => { markSingle(); render(); });
   // Výběr média ve sloupci. Když už je médium v jiném sloupci, sloupce se prohodí.
-  els.board.addEventListener("change", async (e) => {
+  document.addEventListener("change", async (e) => {
     const sel = e.target.closest("select[data-col]");
     if (!sel) return;
     const col = Number(sel.dataset.col);

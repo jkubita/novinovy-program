@@ -9,14 +9,15 @@
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=10">
+  <link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
   <header class="top">
     <div class="brand">
       <h1><a href="./" title="Znovu načíst">Novinárna</a></h1>
-      <p class="tagline">Co bylo kdy na titulních stránkách, po hodinách</p>
+      <p class="tagline">Digitální trafika. Hlavní zprávy českých zpravodajských médií za celý den.</p>
     </div>
+    <div id="picker" class="picker"></div>
     <nav class="controls" aria-label="Ovládání">
       <div class="daynav">
         <button id="prev" type="button" aria-label="Předchozí den">‹</button>
@@ -25,15 +26,13 @@
       </div>
       <label class="opt">Článků
         <select id="depth">
-          <option value="1" selected>1</option>
-          <option value="3">3</option>
+          <option value="1">1</option>
+          <option value="3" selected>3</option>
           <option value="5">5</option>
         </select>
       </label>
     </nav>
   </header>
-
-  <p id="status" class="status" role="status"></p>
 
   <div class="scroll">
   <div class="scroll-inner">
@@ -58,6 +57,6 @@
     });
   </script>
   <!-- Při změně app.js nebo style.css zvyšte ?v=, jinak prohlížeče můžou míchat starou a novou verzi. -->
-  <script type="module" src="app.js?v=10"></script>
+  <script type="module" src="app.js?v=11"></script>
 </body>
 </html>
