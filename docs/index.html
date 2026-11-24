@@ -3,13 +3,42 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Novinárna</title>
-  <meta name="description" content="Co bylo kdy na titulních stránkách českých zpravodajských webů.">
+  <title>Novinárna – digitální trafika: hlavní zprávy českých médií za celý den</title>
+  <meta name="description" content="Novinárna ukazuje, co bylo během dne na titulních stránkách iDNES.cz, Novinek, Hospodářských novin, Seznam Zpráv, Deníku N, Aktuálně.cz, Blesku a ČT24 – hodinu po hodině.">
+  <link rel="canonical" href="https://novinarna.cz/">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="author" content="Jan Kubita">
+  <meta name="theme-color" content="#f6f5f1">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Novinárna">
+  <meta property="og:locale" content="cs_CZ">
+  <meta property="og:url" content="https://novinarna.cz/">
+  <meta property="og:title" content="Novinárna – digitální trafika">
+  <meta property="og:description" content="Hlavní zprávy českých zpravodajských médií za celý den, hodinu po hodině.">
+  <meta property="og:image" content="https://novinarna.cz/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Novinárna – digitální trafika">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Novinárna",
+    "alternateName": "Novinárna – digitální trafika",
+    "url": "https://novinarna.cz/",
+    "inLanguage": "cs",
+    "description": "Hlavní zprávy českých zpravodajských médií za celý den, hodinu po hodině.",
+    "publisher": { "@type": "Person", "name": "Jan Kubita", "url": "https://www.linkedin.com/in/jan-kubita-a3768529/" }
+  }
+  </script>
   <link rel="icon" href="favicon.ico?v=2" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=2">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=2">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
-  <link rel="stylesheet" href="style.css?v=11">
+  <link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
   <header class="top">
@@ -36,10 +65,12 @@
 
   <div class="scroll">
   <div class="scroll-inner">
-  <main id="board" class="board" aria-live="polite"></main>
+  <main id="board" class="board" aria-live="polite">
+    <noscript><p class="empty-state">Novinárna ukazuje, co bylo během dne na titulních stránkách iDNES.cz, Novinek.cz, Hospodářských novin, Seznam Zpráv, Deníku N, Aktuálně.cz, Blesku a ČT24. Pro zobrazení časové osy je potřeba zapnout JavaScript.</p></noscript>
+  </main>
 
   <footer class="foot">
-    Titulní strany předních českých zpravodajských webů. Provozuje <a href="https://www.linkedin.com/in/jan-kubita-a3768529/" target="_blank" rel="noopener">Jan Kubita</a>.
+    <a href="o-webu.html">Novinárna</a> – titulní strany předních českých zpravodajských webů. Provozuje <a href="https://www.linkedin.com/in/jan-kubita-a3768529/" target="_blank" rel="noopener">Jan Kubita</a>.
     Inspirováno projektem <a href="https://www.novinovyprogram.cz/" target="_blank" rel="noopener">novinovyprogram.cz</a> Marcela Šulka. Titulky a perexy © jednotliví vydavatelé.
     Data se stahují automaticky každou hodinu.
   </footer>
@@ -57,6 +88,6 @@
     });
   </script>
   <!-- Při změně app.js nebo style.css zvyšte ?v=, jinak prohlížeče můžou míchat starou a novou verzi. -->
-  <script type="module" src="app.js?v=11"></script>
+  <script type="module" src="app.js?v=12"></script>
 </body>
 </html>

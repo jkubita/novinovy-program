@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+# Surová data (JSON) nejsou určená pro vyhledávače.
+Disallow: /data/
+
+Sitemap: https://novinarna.cz/sitemap.xml

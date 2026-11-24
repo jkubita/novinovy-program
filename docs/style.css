@@ -301,3 +301,16 @@ html.single .head .row { gap: 10px; }
   .heads, .corner { border-radius: 0; }
   .foot { max-width: 100vw; }
 }
+
+/* Podstránky (O webu). */
+body.page .logo { margin: 0; font: 700 28px/1.1 var(--font); letter-spacing: -0.01em; }
+body.page .logo a { color: inherit; text-decoration: none; }
+.article { max-width: 680px; margin: 40px auto 64px; padding: 0 20px; font: 18px/1.6 var(--font); }
+.article h1 { margin: 0 0 20px; font: 700 34px/1.2 var(--font); }
+.article p { margin: 0 0 14px; }
+.article .back { margin-top: 32px; font: 15px/1.4 var(--ui); }
+@media (max-width: 600px) {
+  body.page .logo { font-size: 23px; }
+  .article { margin-top: 24px; font-size: 17px; }
+  .article h1 { font-size: 28px; }
+}
