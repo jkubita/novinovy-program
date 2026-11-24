@@ -48,7 +48,14 @@ jobs:
           if git diff --cached --quiet; then echo "Žádná nová data"; exit 0; fi
           git commit -q -m "data: snímek $(TZ=Europe/Prague date '+%Y-%m-%d %H:%M')"
           for i in 1 2 3; do
-            git pull -q --rebase origin "${GITHUB_REF_NAME}" && git push -q origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            if ! git pull -q --rebase origin "${GITHUB_REF_NAME}"; then
+              # Souběžný běh (budík + pojistka ve stejnou chvíli) mezitím uložil
+              # snímek do stejných souborů. Jeho data jsou stejně čerstvá, tento se zahodí.
+              git rebase --abort
+              echo "Data mezitím uložil souběžný běh, tento snímek přeskakuji."
+              exit 0
+            fi
+            git push -q origin "HEAD:${GITHUB_REF_NAME}" && exit 0
             sleep $((i * 5))
           done
           exit 1
