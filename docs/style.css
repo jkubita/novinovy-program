@@ -173,7 +173,6 @@ a { color: inherit; }
 .item.rank-0 .headline { font-weight: 700; font-size: 15px; }
 .item .perex { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; margin-top: 4px; font: 13px/1.4 var(--ui); color: var(--muted); }
 .item.same:not(.rank-0) { color: var(--muted); }
-.item.new:not(.rank-0) { box-shadow: inset 3px 0 0 var(--site); padding-left: 9px; }
 .item:hover, .item.hl { background: var(--hover); color: var(--ink); }
 .item:focus-visible { outline: 2px solid var(--site); }
 
