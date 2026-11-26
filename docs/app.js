@@ -1,6 +1,9 @@
 const DATA = "data";
 const SLOT = 60 * 60 * 1000; // interval stahování (viz .github/workflows/scrape.yml)
-const HOUR_PX = { 1: 150, 3: 230, 5: 320 }; // výška jedné hodiny na časové ose podle počtu článků
+// Výška jedné hodiny na časové ose podle počtu článků. Na mobilu je sloupec užší
+// a titulky se lámou do více řádků, proto potřebuje víc místa.
+const HOUR_PX = { 1: 165, 3: 270, 5: 380 };
+const HOUR_PX_MOBILE = { 1: 175, 3: 300, 5: 420 };
 
 const $ = (id) => document.getElementById(id);
 const els = { day: $("day"), prev: $("prev"), next: $("next"), depth: $("depth"), board: $("board"), picker: $("picker"), detail: $("detail"), body: $("detail-body") };
@@ -69,6 +72,12 @@ function toBlocks(day, depth) {
     const top = snap.top.slice(0, depth);
     const key = top.join(",") + (snap.source ? `|${snap.source}` : "");
     const start = slotStart(snap.time);
+    // Dva snímky ve stejné hodině (např. budík + ruční spuštění): platí ten pozdější,
+    // jinak by z prvního zbyl blok nulové délky.
+    if (cur && start === cur.start) {
+      blocks.pop();
+      cur = blocks[blocks.length - 1] ?? null;
+    }
     if (cur && cur.key === key && start - cur.end < SLOT / 2) {
       cur.end = start + SLOT;
       continue;
@@ -90,7 +99,7 @@ function render() {
   const now = Date.now();
   const t0 = all.length ? Math.min(...all.map((b) => b.start)) : slotStart(now);
   const t1 = all.length ? Math.max(...all.map((b) => b.end)) : slotStart(now) + SLOT;
-  const hourPx = HOUR_PX[depth] ?? 150;
+  const hourPx = (mobile.matches ? HOUR_PX_MOBILE : HOUR_PX)[depth] ?? 170;
   const y = (t) => ((t - t0) / 3600000) * hourPx;
   const height = y(t1);
 
