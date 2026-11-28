@@ -1,0 +1,31 @@
+name: Test iROZHLAS (jednorázový)
+on:
+  push:
+    branches: [test-irozhlas]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Titulní strana a RSS stejným způsobem jako scraper
+        run: |
+          cat > t.mjs <<'JS'
+          import { fetchPage } from "./src/fetch.js";
+          for (const url of ["https://www.irozhlas.cz/", "https://www.irozhlas.cz/rss/irozhlas"]) {
+            try {
+              const { html } = await fetchPage(url, { retries: 0 });
+              const items = (html.match(/<item>/g) || []).length;
+              const links = (html.match(/href="[^"]*\/zpravy-[^"]*"/g) || []).length;
+              console.log(`VYSLEDEK OK ${url} | ${html.length} B | item: ${items} | odkazy: ${links}`);
+            } catch (e) {
+              console.log(`VYSLEDEK CHYBA ${url} | ${e.message}`);
+            }
+          }
+          JS
+          node t.mjs
