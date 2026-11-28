@@ -17,6 +17,8 @@
  * @property {string} [strip]     CSS selektor prvků, které se před zpracováním odstraní
  *                                (např. štítky „Video“, „Živě“ přilepené k titulku)
  * @property {string} [feed]      RSS kanál jako náhrada, když titulní stranu nejde stáhnout.
+ * @property {boolean} [feedOnly]  titulní stranu vůbec nezkoušet a brát rovnou RSS
+ *                                (web stahování titulní strany z GitHubu blokuje)
  *                                Pořadí je pak podle času vydání, ne podle důležitosti.
  * @property {string} color       barva sloupce ve frontendu
  */
@@ -96,6 +98,19 @@ export const SITES = [
     article: /^https?:\/\/ct24\.ceskatelevize\.cz\/clanek\/[a-z0-9-]+\/[a-z0-9-]+-\d{5,}\/?$/i,
     strip: ".wc-prefix",
     color: "#0b4ea2",
+  },
+  {
+    id: "irozhlas",
+    // RSS řadí podle času vydání, ne podle titulní strany, proto „nejnovější“.
+    name: "iROZHLAS – nejnovější",
+    url: "https://www.irozhlas.cz/",
+    // https://www.irozhlas.cz/zpravy-domov/nazev-clanku_2611281251_vsn
+    article: /^https?:\/\/(www\.)?irozhlas\.cz\/[a-z0-9-]+(\/[a-z0-9-]+)?\/[a-z0-9-]+_\d{10}_[a-z]+\/?$/i,
+    // Titulní strana vrací serverům GitHubu HTTP 403 (Cloudflare). Blokaci neobcházíme,
+    // dokud ČRo stahování nepovolí, bereme oficiální RSS kanál.
+    feed: "https://www.irozhlas.cz/rss/irozhlas",
+    feedOnly: true,
+    color: "#ed1c24",
   },
 ];
 

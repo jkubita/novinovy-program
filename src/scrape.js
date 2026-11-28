@@ -27,8 +27,8 @@ const status = {};
 
 const results = await Promise.all(
   sites.map(async (site) => {
-    let homepageError = null;
-    try {
+    let homepageError = site.feedOnly ? new Error("titulní strana se nestahuje (jen RSS)") : null;
+    if (!site.feedOnly) try {
       const { html, finalUrl } = await fetchPage(site.url);
       const articles = extractArticles(html, site, { baseUrl: finalUrl });
       if (articles.length < MIN_ARTICLES) {

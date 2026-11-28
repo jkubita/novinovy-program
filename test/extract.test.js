@@ -163,3 +163,14 @@ test("všechny weby mají unikátní id a platnou titulní URL", () => {
   assert.equal(new Set(SITES.map((s) => s.id)).size, SITES.length);
   for (const s of SITES) assert.ok(new URL(s.url));
 });
+
+test("iROZHLAS: RSS kanál, odkazy na články včetně podrubrik", () => {
+  const xml = `<?xml version="1.0" encoding="utf-8"?><rss version="2.0"><channel><title>iROZHLAS.cz</title>
+    <item><title>Rusko poškodilo dvě školy v Kremenčuku</title><link>https://www.irozhlas.cz/zpravy-svet/online-rusko-poskodilo-dve-skoly_2611280813_adn</link><description><![CDATA[<p>Útok si vyžádal čtyři zraněné.</p>]]></description></item>
+    <item><title>Nová kniha o zámku Konopiště</title><link>https://www.irozhlas.cz/kultura/literatura/nova-kniha-o-zamku-konopiste_2611280811_bod</link></item>
+    <item><title>Rubrika</title><link>https://www.irozhlas.cz/zpravy-domov</link></item>
+  </channel></rss>`;
+  const res = extractFeed(xml, getSite("irozhlas"));
+  assert.deepEqual(res.map((a) => a.headline), ["Rusko poškodilo dvě školy v Kremenčuku", "Nová kniha o zámku Konopiště"]);
+  assert.equal(res[0].perex, "Útok si vyžádal čtyři zraněné.");
+});
