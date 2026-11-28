@@ -2,8 +2,8 @@ const DATA = "data";
 const SLOT = 60 * 60 * 1000; // interval stahování (viz .github/workflows/scrape.yml)
 // Výška jedné hodiny na časové ose podle počtu článků. Na mobilu je sloupec užší
 // a titulky se lámou do více řádků, proto potřebuje víc místa.
-const HOUR_PX = { 1: 165, 3: 270, 5: 380 };
-const HOUR_PX_MOBILE = { 1: 175, 3: 300, 5: 420 };
+const HOUR_PX = { 1: 110, 3: 190, 5: 275 };
+const HOUR_PX_MOBILE = { 1: 125, 3: 220, 5: 330 };
 
 const $ = (id) => document.getElementById(id);
 const els = { day: $("day"), prev: $("prev"), next: $("next"), depth: $("depth"), board: $("board"), picker: $("picker"), detail: $("detail"), body: $("detail-body") };
@@ -144,7 +144,6 @@ function render() {
         const cls = ["item", `rank-${rank}`, fresh ? "new" : "same"].join(" ");
         html.push(`<button type="button" class="${cls}" data-site="${s.id}" data-idx="${idx}" data-key="${s.id}:${idx}">`);
         html.push(`<span class="headline">${esc(headlineAt(a, b.time))}</span>`);
-        if (rank === 0 && a.perex) html.push(`<span class="perex">${esc(a.perex)}</span>`);
         html.push(`</button>`);
       });
       html.push(`</div></section>`);
